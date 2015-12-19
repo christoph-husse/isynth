@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>GlitchyBird</title>
+	
+	<style>
+		html, body { height: 100%; width: 100%; margin: 0; overflow: hidden; }
+		canvas { height: 100%; width: 100%; background: #yellow; margin: 0;}
+	</style>
+  </head>
+  <body>
+
+    <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+	  
+    <script type='text/javascript'>
+      // connect to canvas
+      var Module = {
+        preRun: [],
+        postRun: [],
+		eventQueue: [],
+        print: (function() {
+          return function(text) {
+          };
+        })(),
+		
+        printErr: function(text) {
+        },
+		
+        canvas: document.getElementById('canvas'),
+		
+        setStatus: function(text) { },
+		
+        totalDependencies: 0,
+		
+        monitorRunDependencies: function(left) {}
+      };
+    </script>      
+	
+	<script src="jquery.js"></script>
+	<script src="audiolib.min.js"></script>
+	<script src="hammer.js/hammer.js"></script>
+	<script src="hammer.js/plugins/hammer.fakemultitouch.js"></script>
+	<script src="hammer.js/plugins/hammer.showtouches.js"></script>
+
+
+
+	<script>
+		var hammertime;
+
+		function logEvent(ev) {
+			if(!ev.gesture) {
+				return;
+			}
+			
+			switch(ev.type)
+			{
+			case "touch": 
+			case "release":
+			case "hold":
+			case "tap": 
+			case "dragstart":
+			case "doubletap": 
+			case "drag":
+			case "dragend":
+				Module.eventQueue.push(ev); break;
+			}
+			
+			ev.preventDefault();
+			ev.stopPropagation();
+		}
+			
+		hammertime = Hammer(document.getElementById('canvas'), {
+			  prevent_default: true,
+			  no_mouseevents: true
+		  })
+		  .on("tap touch release hold doubletap dragstart drag dragend", logEvent);
+
+	</script>
+
+	<script src='iSynth.js'></script>
+	
+	<script>
+		pcmPlayback_GetBufferAt = Module.cwrap('pcmPlayback_GetBufferAt', 'number', ['number']);
+		pcmPlayback_PrepareBuffer = Module.cwrap('pcmPlayback_PrepareBuffer', 'void', ['void']);
+		
+		function audioProcess(buffer)
+		{
+			pcmPlayback_PrepareBuffer();
+			
+			for(i = 0; i < 4096; i++)
+				buffer[i] = pcmPlayback_GetBufferAt(i);
+		}
+		
+		audioLib.Sink(audioProcess, 1, 4096, 44100);
+	</script>
+	
+</body>
+</html>
